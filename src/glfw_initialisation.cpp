@@ -1,5 +1,7 @@
-#include "glfw_initialisation.h"
-#include "GLFW/glfw3.h"
+#include <glfw_initialisation.h>
+#include <GLFW/glfw3.h>
+#include <precomp.h>
+
 
 veng::GlfwInitialisation::GlfwInitialisation() {
     if(glfwInit() != GLFW_TRUE) {
