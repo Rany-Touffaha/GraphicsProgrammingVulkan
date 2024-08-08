@@ -1,4 +1,3 @@
-#include <cstdlib>
 #include "glfw_initialisation.h"
 #include "GLFW/glfw3.h"
 
