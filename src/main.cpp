@@ -2,7 +2,7 @@
 #include <glfw_initialisation.h>
 #include <glfw_window.h>
 #include <precomp.h>
-#include "graphics.h"
+#include <graphics.h>
 
 
 int32_t main(int32_t argc, gsl::zstring* argv) {

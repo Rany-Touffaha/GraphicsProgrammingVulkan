@@ -14,13 +14,19 @@ namespace veng {
         void InitaliseVulkan();
         void CreateInstance();
         gsl::span<gsl::czstring> GetSuggestedInstanceExtensions();
+        std::vector<gsl::czstring> GetRequiredInstanceExtensions();
+
         static std::vector<VkExtensionProperties> GetSupportedInstanceExtensions();
         static bool AreAllExtensionsSupported(gsl::span<gsl::czstring> extensions);
+
+        static std::vector<VkLayerProperties> GetSupportedValidationLayers();
+        static bool AreAllLayersSupported(gsl::span<gsl::czstring> layers);
 
 
         VkInstance vkInstance = VK_NULL_HANDLE;
         gsl::span<gsl::czstring> m_suggestedExtensions;
         std::vector<gsl::czstring> m_extensions;
         gsl::not_null<Window*> window;
+        bool validationEnabled = false;
     };
 }
