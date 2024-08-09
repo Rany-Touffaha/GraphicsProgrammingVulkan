@@ -5,5 +5,6 @@
 #include <cstdint>
 #include <gsl/gsl>
 #include <string>
+#include <iostream>
 #include <string_view>
 #include <glm/glm.hpp>
