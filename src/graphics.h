@@ -13,12 +13,13 @@ namespace veng {
 
         void InitaliseVulkan();
         void CreateInstance();
-        gsl::span<gsl::czstring> GetSuggestedExtensions();
+        static gsl::span<gsl::czstring> GetSuggestedInstanceExtensions();
+        static std::vector<VkExtensionProperties> GetSupportedInstanceExtensions();
 
 
         VkInstance vkInstance = VK_NULL_HANDLE;
         gsl::span<gsl::czstring> m_suggestedExtensions;
-        std::vector<gsl::czstring> m_extensions;
+        static std::vector<gsl::czstring> m_extensions;
         gsl::not_null<Window*> window;
     };
 }
