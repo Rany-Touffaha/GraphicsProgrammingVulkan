@@ -9,3 +9,4 @@
 #include <string_view>
 #include <glm/glm.hpp>
 #include <utilities.h>
+#include <functional>

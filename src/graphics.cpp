@@ -74,17 +74,17 @@ namespace veng {
         return properties;
     }
 
+    bool ExtensionMatchesName(gsl::czstring name, const VkExtensionProperties& extensionProperties) {
+        return veng::streq(extensionProperties.extensionName, name);
+    }
+
+    bool IsExtensionSupported(gsl::span<VkExtensionProperties> extensions, gsl::czstring name) {
+        return std::any_of(extensions.begin(), extensions.end(),
+                           std::bind_front(ExtensionMatchesName, name));
+    }
+
     bool Graphics::AreAllExtensionsSupported(gsl::span<gsl::czstring> extensions) {
         std::vector<VkExtensionProperties> supportedExtensions = GetSupportedInstanceExtensions();
-
-        auto isExtensionSupported = [&supportedExtensions](gsl::czstring name){
-            return std::any_of(supportedExtensions.begin(), supportedExtensions.end(),
-                               [&name](const VkExtensionProperties& property){
-                                   return veng::streq(property.extensionName, name);
-
-                               });
-        };
-
-        return std::all_of(extensions.begin(), extensions.end(), isExtensionSupported);
+        return std::all_of(extensions.begin(), extensions.end(), std::bind_front(IsExtensionSupported, supportedExtensions));
     }
 }
