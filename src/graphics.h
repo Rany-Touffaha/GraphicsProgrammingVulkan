@@ -25,7 +25,7 @@ namespace veng {
 
 
         VkInstance vkInstance = VK_NULL_HANDLE;
-        VkDebugUtilsMessengerEXT debugMessenger;
+        VkDebugUtilsMessengerEXT debugMessenger{};
         gsl::span<gsl::czstring> m_suggestedExtensions;
         std::vector<gsl::czstring> m_extensions;
         gsl::not_null<Window*> window;

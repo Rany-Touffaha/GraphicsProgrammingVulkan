@@ -3,6 +3,8 @@
 #include <GLFW/glfw3.h>
 #include <spdlog/spdlog.h>
 
+#pragma region VK_FUNCTION_EXT_IMPL
+
 VKAPI_ATTR VkResult VKAPI_CALL vkCreateDebugUtilsMessengerEXT(
         VkInstance vkInstance,
         const VkDebugUtilsMessengerCreateInfoEXT* info,
@@ -32,7 +34,11 @@ VKAPI_ATTR void VKAPI_CALL vkDestroyDebugUtilsMessengerEXT(
     }
 }
 
+#pragma endregion
+
 namespace veng {
+
+#pragma region VALIDATION_LAYERS
 
     static VKAPI_ATTR VkBool32 VKAPI_CALL ValidationCallback(
             VkDebugUtilsMessageSeverityFlagBitsEXT severity,
@@ -63,29 +69,45 @@ namespace veng {
         return creationInfo;
     }
 
-    Graphics::Graphics(gsl::not_null<Window *> window) : window (window){
-    #if !defined(NDEBUG)
-        validationEnabled = true;
-    #endif
+    std::vector<VkLayerProperties> Graphics::GetSupportedValidationLayers() {
+        std::uint32_t count;
+        vkEnumerateInstanceLayerProperties(&count, nullptr);
 
-        InitaliseVulkan();
+        if (count==0) return {};
+
+        std::vector<VkLayerProperties> properties(count);
+        vkEnumerateInstanceLayerProperties(&count, properties.data());
+
+        return properties;
     }
 
-    Graphics::~Graphics() {
-        if (vkInstance != nullptr) {
+    bool LayerMatchesName(gsl::czstring name, const VkLayerProperties& layerProperties) {
+        return veng::streq(layerProperties.layerName, name);
+    }
 
-            if (debugMessenger != nullptr) {
-                vkDestroyDebugUtilsMessengerEXT(vkInstance, debugMessenger, nullptr);
-            }
+    bool IsLayerSupported(gsl::span<VkLayerProperties> layers, gsl::czstring name) {
+        return std::any_of(layers.begin(), layers.end(),
+                           std::bind_front(LayerMatchesName, name));
+    }
 
-            vkDestroyInstance(vkInstance, nullptr);
+    bool Graphics::AreAllLayersSupported(gsl::span<gsl::czstring> layers) {
+        std::vector<VkLayerProperties> supportedLayers = GetSupportedValidationLayers();
+        return std::all_of(layers.begin(), layers.end(), std::bind_front(IsLayerSupported, supportedLayers));
+    }
+
+    void Graphics::SetupDebugMessenger() {
+        if (!validationEnabled) return;
+        VkDebugUtilsMessengerCreateInfoEXT info = GetCreateMessengerInfo();
+        VkResult result = vkCreateDebugUtilsMessengerEXT(vkInstance, &info, nullptr, &debugMessenger);
+        if (result != VK_SUCCESS){
+            spdlog::error("Cannot create debug messenger");
+            return;
         }
     }
 
-    void Graphics::InitaliseVulkan() {
-        CreateInstance();
-        SetupDebugMessenger();
-    }
+#pragma endregion
+
+#pragma region INSTANCE_AND_EXTENSIONS
 
     void Graphics::CreateInstance() {
         std::array<gsl::czstring, 1> validationLayers = {"VK_LAYER_KHRONOS_validation"};
@@ -183,39 +205,29 @@ namespace veng {
         return std::all_of(extensions.begin(), extensions.end(), std::bind_front(IsExtensionSupported, supportedExtensions));
     }
 
-    std::vector<VkLayerProperties> Graphics::GetSupportedValidationLayers() {
-        std::uint32_t count;
-        vkEnumerateInstanceLayerProperties(&count, nullptr);
+#pragma endregion
 
-        if (count==0) return {};
+    Graphics::Graphics(gsl::not_null<Window *> window) : window (window){
+    #if !defined(NDEBUG)
+        validationEnabled = true;
+    #endif
 
-        std::vector<VkLayerProperties> properties(count);
-        vkEnumerateInstanceLayerProperties(&count, properties.data());
-
-        return properties;
+        InitaliseVulkan();
     }
 
-    bool LayerMatchesName(gsl::czstring name, const VkLayerProperties& layerProperties) {
-        return veng::streq(layerProperties.layerName, name);
-    }
+    Graphics::~Graphics() {
+        if (vkInstance != nullptr) {
 
-    bool IsLayerSupported(gsl::span<VkLayerProperties> layers, gsl::czstring name) {
-        return std::any_of(layers.begin(), layers.end(),
-                           std::bind_front(LayerMatchesName, name));
-    }
+            if (debugMessenger != nullptr) {
+                vkDestroyDebugUtilsMessengerEXT(vkInstance, debugMessenger, nullptr);
+            }
 
-    bool Graphics::AreAllLayersSupported(gsl::span<gsl::czstring> layers) {
-        std::vector<VkLayerProperties> supportedLayers = GetSupportedValidationLayers();
-        return std::all_of(layers.begin(), layers.end(), std::bind_front(IsLayerSupported, supportedLayers));
-    }
-
-    void Graphics::SetupDebugMessenger() {
-        if (!validationEnabled) return;
-        VkDebugUtilsMessengerCreateInfoEXT info = GetCreateMessengerInfo();
-        VkResult result = vkCreateDebugUtilsMessengerEXT(vkInstance, &info, nullptr, &debugMessenger);
-        if (result != VK_SUCCESS){
-            spdlog::error("Cannot create debug messenger");
-            return;
+            vkDestroyInstance(vkInstance, nullptr);
         }
+    }
+
+    void Graphics::InitaliseVulkan() {
+        CreateInstance();
+        SetupDebugMessenger();
     }
 }
