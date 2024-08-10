@@ -209,15 +209,27 @@ namespace veng {
 
 #pragma region DEVICES_AND_QUEUES
 
+    Graphics::QueueFamilyIndices Graphics::FindQueueFamilies(VkPhysicalDevice device) {
+
+        std::uint32_t queueFamilyCount = 0;
+        vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
+        std::vector<VkQueueFamilyProperties> families(queueFamilyCount);
+        vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, families.data());
+
+        auto graphicsFamilyIt = std::find_if(families.begin(), families.end(), [](const VkQueueFamilyProperties& properties) {
+        return properties.queueFlags & (VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_TRANSFER_BIT);
+        });
+
+        QueueFamilyIndices result;
+        result.graphicsFamily = graphicsFamilyIt - families.begin();
+
+        return result;
+    }
+
     bool Graphics::IsDeviceSuitable(VkPhysicalDevice device) {
 
-        VkPhysicalDeviceProperties deviceProperties;
-        vkGetPhysicalDeviceProperties(device, &deviceProperties);
-
-        VkPhysicalDeviceFeatures deviceFeatures;
-        vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
-
-        return true;
+        QueueFamilyIndices families = FindQueueFamilies(device);
+        return families.IsValid();
     }
 
     void Graphics::PickPhysicalDevice() {
@@ -230,11 +242,7 @@ namespace veng {
             std::exit(EXIT_FAILURE);
         }
 
-        for(VkPhysicalDevice device : devices){
-            VkPhysicalDeviceProperties deviceProperties;
-            vkGetPhysicalDeviceProperties(device, &deviceProperties);
-            spdlog::info(deviceProperties.deviceName);
-        }
+        physicalDevice = devices[0];
     }
 
     std::vector<VkPhysicalDevice> Graphics::GetAvailableDevices() {
@@ -275,5 +283,4 @@ namespace veng {
         SetupDebugMessenger();
         PickPhysicalDevice();
     }
-
 }
