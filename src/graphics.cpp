@@ -288,6 +288,8 @@ namespace veng {
         if(result != VK_SUCCESS){
             std::exit(EXIT_FAILURE);
         }
+
+        vkGetDeviceQueue(logicalDevice, queueInfo.queueFamilyIndex, 0, &graphicsQueue);
     }
 
 #pragma endregion

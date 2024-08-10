@@ -37,9 +37,11 @@ namespace veng {
         std::vector<VkPhysicalDevice> GetAvailableDevices();
 
         VkInstance vkInstance = VK_NULL_HANDLE;
-        VkPhysicalDevice physicalDevice = nullptr;
-        VkDevice logicalDevice = nullptr;
         VkDebugUtilsMessengerEXT debugMessenger{};
+
+        VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
+        VkDevice logicalDevice = VK_NULL_HANDLE;
+        VkQueue graphicsQueue = VK_NULL_HANDLE;
         gsl::span<gsl::czstring> m_suggestedExtensions;
         std::vector<gsl::czstring> m_extensions;
         gsl::not_null<Window*> window;
