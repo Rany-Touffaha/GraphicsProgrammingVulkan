@@ -22,6 +22,7 @@ namespace veng {
         void CreateInstance();
         void SetupDebugMessenger();
         void PickPhysicalDevice();
+        void CreateLogicalDeviceAndQueues();
         gsl::span<gsl::czstring> GetSuggestedInstanceExtensions();
         std::vector<gsl::czstring> GetRequiredInstanceExtensions();
 
@@ -37,6 +38,7 @@ namespace veng {
 
         VkInstance vkInstance = VK_NULL_HANDLE;
         VkPhysicalDevice physicalDevice = nullptr;
+        VkDevice logicalDevice = nullptr;
         VkDebugUtilsMessengerEXT debugMessenger{};
         gsl::span<gsl::czstring> m_suggestedExtensions;
         std::vector<gsl::czstring> m_extensions;

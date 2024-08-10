@@ -259,6 +259,37 @@ namespace veng {
         return devices;
     }
 
+    void Graphics::CreateLogicalDeviceAndQueues() {
+        QueueFamilyIndices pickedDeviceFamilies = FindQueueFamilies(physicalDevice);
+
+        if (!pickedDeviceFamilies.IsValid()){
+            std::exit(EXIT_FAILURE);
+        }
+
+        std::float_t queuePriority = 1.0f;
+
+        VkDeviceQueueCreateInfo queueInfo = {};
+        queueInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+        queueInfo.queueFamilyIndex = pickedDeviceFamilies.graphicsFamily.value();
+        queueInfo.queueCount = 1;
+        queueInfo.pQueuePriorities = &queuePriority;
+
+        VkPhysicalDeviceFeatures requiredFeatures = {};
+
+        VkDeviceCreateInfo deviceInfo = {};
+        deviceInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+        deviceInfo.queueCreateInfoCount = 1;
+        deviceInfo.pQueueCreateInfos = &queueInfo;
+        deviceInfo.pEnabledFeatures = &requiredFeatures;
+        deviceInfo.enabledExtensionCount = 0;
+        deviceInfo.enabledLayerCount = 0;
+
+        VkResult result = vkCreateDevice(physicalDevice, &deviceInfo, nullptr, &logicalDevice);
+        if(result != VK_SUCCESS){
+            std::exit(EXIT_FAILURE);
+        }
+    }
+
 #pragma endregion
 
     Graphics::Graphics(gsl::not_null<Window *> window) : window (window){
@@ -270,6 +301,10 @@ namespace veng {
     }
 
     Graphics::~Graphics() {
+        if (logicalDevice != nullptr) {
+            vkDestroyDevice(logicalDevice, nullptr);
+        }
+
         if (vkInstance != nullptr) {
             if (debugMessenger != nullptr) {
                 vkDestroyDebugUtilsMessengerEXT(vkInstance, debugMessenger, nullptr);
@@ -282,5 +317,6 @@ namespace veng {
         CreateInstance();
         SetupDebugMessenger();
         PickPhysicalDevice();
+        CreateLogicalDeviceAndQueues();
     }
 }
