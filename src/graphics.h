@@ -13,6 +13,7 @@ namespace veng {
 
         void InitaliseVulkan();
         void CreateInstance();
+        void SetupDebugMessenger();
         gsl::span<gsl::czstring> GetSuggestedInstanceExtensions();
         std::vector<gsl::czstring> GetRequiredInstanceExtensions();
 
@@ -24,6 +25,7 @@ namespace veng {
 
 
         VkInstance vkInstance = VK_NULL_HANDLE;
+        VkDebugUtilsMessengerEXT debugMessenger;
         gsl::span<gsl::czstring> m_suggestedExtensions;
         std::vector<gsl::czstring> m_extensions;
         gsl::not_null<Window*> window;
