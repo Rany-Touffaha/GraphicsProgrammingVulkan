@@ -1,6 +1,7 @@
 #include <precomp.h>
 #include <graphics.h>
 #include <GLFW/glfw3.h>
+#include <spdlog/spdlog.h>
 
 namespace veng {
 
@@ -10,10 +11,10 @@ namespace veng {
             const VkDebugUtilsMessengerCallbackDataEXT* callbackData,
             void* userData
             ){
-        if (severity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
-            std::cerr << "Validation Error: " << callbackData->pMessage << std::endl;
+        if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
+            spdlog::warn("Vulkan Validation: {}", callbackData->pMessage);
         } else {
-            std::cout << "Validation Message: " << callbackData->pMessage << std::endl;
+            spdlog::error("Vulkan Error: {}", callbackData->pMessage);
         }
         return VK_FALSE;
     }
@@ -22,8 +23,7 @@ namespace veng {
         VkDebugUtilsMessengerCreateInfoEXT creationInfo = {};
         creationInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
         creationInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
-                                        VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT |
-                                        VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT;
+                                        VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
 
         creationInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
                                     VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT;
