@@ -207,6 +207,52 @@ namespace veng {
 
 #pragma endregion
 
+#pragma region DEVICES_AND_QUEUES
+
+    bool Graphics::IsDeviceSuitable(VkPhysicalDevice device) {
+
+        VkPhysicalDeviceProperties deviceProperties;
+        vkGetPhysicalDeviceProperties(device, &deviceProperties);
+
+        VkPhysicalDeviceFeatures deviceFeatures;
+        vkGetPhysicalDeviceFeatures(device, &deviceFeatures);
+
+        return true;
+    }
+
+    void Graphics::PickPhysicalDevice() {
+        std::vector<VkPhysicalDevice> devices = GetAvailableDevices();
+
+        std::erase_if(devices, std::not_fn(std::bind_front(&Graphics::IsDeviceSuitable, this)));
+
+        if (devices.empty()){
+            spdlog::error("No physical devices that match the criteria");
+            std::exit(EXIT_FAILURE);
+        }
+
+        for(VkPhysicalDevice device : devices){
+            VkPhysicalDeviceProperties deviceProperties;
+            vkGetPhysicalDeviceProperties(device, &deviceProperties);
+            spdlog::info(deviceProperties.deviceName);
+        }
+    }
+
+    std::vector<VkPhysicalDevice> Graphics::GetAvailableDevices() {
+        std::uint32_t deviceCount;
+        vkEnumeratePhysicalDevices(vkInstance, &deviceCount, nullptr);
+
+        if (deviceCount == 0){
+            return {};
+        }
+
+        std::vector<VkPhysicalDevice> devices(deviceCount);
+        vkEnumeratePhysicalDevices(vkInstance, &deviceCount, devices.data());
+
+        return devices;
+    }
+
+#pragma endregion
+
     Graphics::Graphics(gsl::not_null<Window *> window) : window (window){
     #if !defined(NDEBUG)
         validationEnabled = true;
@@ -217,11 +263,9 @@ namespace veng {
 
     Graphics::~Graphics() {
         if (vkInstance != nullptr) {
-
             if (debugMessenger != nullptr) {
                 vkDestroyDebugUtilsMessengerEXT(vkInstance, debugMessenger, nullptr);
             }
-
             vkDestroyInstance(vkInstance, nullptr);
         }
     }
@@ -229,5 +273,7 @@ namespace veng {
     void Graphics::InitaliseVulkan() {
         CreateInstance();
         SetupDebugMessenger();
+        PickPhysicalDevice();
     }
+
 }
