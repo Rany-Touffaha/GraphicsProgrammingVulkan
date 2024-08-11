@@ -15,7 +15,7 @@ namespace veng {
             std::optional<std::uint32_t> graphicsFamily = std::nullopt;
             std::optional<std::uint32_t> presentationFamily = std::nullopt;
 
-            bool IsValid() const { return graphicsFamily.has_value() /* && presentationFamily.has_value() */ ;}
+            bool IsValid() const { return graphicsFamily.has_value() && presentationFamily.has_value();}
         };
 
         void InitaliseVulkan();
@@ -44,6 +44,7 @@ namespace veng {
         VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
         VkDevice logicalDevice = VK_NULL_HANDLE;
         VkQueue graphicsQueue = VK_NULL_HANDLE;
+        VkQueue presentQueue = VK_NULL_HANDLE;
 
         VkSurfaceKHR surface  = VK_NULL_HANDLE;
 

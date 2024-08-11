@@ -223,6 +223,16 @@ namespace veng {
         QueueFamilyIndices result;
         result.graphicsFamily = graphicsFamilyIt - families.begin();
 
+        for (std::uint32_t i = 0; i < families.size(); ++i) {
+            VkBool32 hasPresentationSupport = false;
+            vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &hasPresentationSupport);
+            if (hasPresentationSupport){
+                result.presentationFamily = i;
+                break;
+            }
+        }
+
+
         return result;
     }
 
@@ -266,20 +276,30 @@ namespace veng {
             std::exit(EXIT_FAILURE);
         }
 
+        std::set<std::uint32_t> uniqueQueueFamilies = {
+                pickedDeviceFamilies.graphicsFamily.value(),
+                pickedDeviceFamilies.presentationFamily.value()};
+
         std::float_t queuePriority = 1.0f;
 
-        VkDeviceQueueCreateInfo queueInfo = {};
-        queueInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-        queueInfo.queueFamilyIndex = pickedDeviceFamilies.graphicsFamily.value();
-        queueInfo.queueCount = 1;
-        queueInfo.pQueuePriorities = &queuePriority;
+        std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
+        for (std::uint32_t uniqueQueueFamily : uniqueQueueFamilies) {
+            VkDeviceQueueCreateInfo queueInfo = {};
+            queueInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+            queueInfo.queueFamilyIndex = uniqueQueueFamily;
+            queueInfo.queueCount = 1;
+            queueInfo.pQueuePriorities = &queuePriority;
+            queueCreateInfos.push_back(queueInfo);
+        }
+
+
 
         VkPhysicalDeviceFeatures requiredFeatures = {};
 
         VkDeviceCreateInfo deviceInfo = {};
         deviceInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-        deviceInfo.queueCreateInfoCount = 1;
-        deviceInfo.pQueueCreateInfos = &queueInfo;
+        deviceInfo.queueCreateInfoCount = queueCreateInfos.size();
+        deviceInfo.pQueueCreateInfos = queueCreateInfos.data();
         deviceInfo.pEnabledFeatures = &requiredFeatures;
         deviceInfo.enabledExtensionCount = 0;
         deviceInfo.enabledLayerCount = 0;
@@ -289,7 +309,8 @@ namespace veng {
             std::exit(EXIT_FAILURE);
         }
 
-        vkGetDeviceQueue(logicalDevice, queueInfo.queueFamilyIndex, 0, &graphicsQueue);
+        vkGetDeviceQueue(logicalDevice, pickedDeviceFamilies.graphicsFamily.value(), 0, &graphicsQueue);
+        vkGetDeviceQueue(logicalDevice, pickedDeviceFamilies.presentationFamily.value(), 0, &presentQueue);
     }
 
 #pragma endregion
@@ -333,9 +354,9 @@ namespace veng {
     void Graphics::InitaliseVulkan() {
         CreateInstance();
         SetupDebugMessenger();
+        CreateSurface();
         PickPhysicalDevice();
         CreateLogicalDeviceAndQueues();
-        CreateSurface();
     }
 
 }
