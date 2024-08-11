@@ -69,6 +69,10 @@ namespace veng {
 
         VkSurfaceKHR surface  = VK_NULL_HANDLE;
         VkSwapchainKHR swapChain = VK_NULL_HANDLE;
+        VkSurfaceFormatKHR surfaceFormat;
+        VkPresentModeKHR presentMode;
+        VkExtent2D extent;
+        std::vector<VkImage> swapChainImages;
 
         gsl::span<gsl::czstring> m_suggestedExtensions;
         std::vector<gsl::czstring> m_extensions;

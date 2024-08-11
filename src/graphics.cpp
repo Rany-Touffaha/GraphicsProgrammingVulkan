@@ -339,45 +339,6 @@ namespace veng {
         }
     }
 
-#pragma endregion
-
-    Graphics::Graphics(gsl::not_null<Window *> window) : window (window){
-    #if !defined(NDEBUG)
-        validationEnabled = true;
-    #endif
-
-        InitaliseVulkan();
-    }
-
-    Graphics::~Graphics() {
-        if (logicalDevice != VK_NULL_HANDLE) {
-            if (swapChain != VK_NULL_HANDLE) {
-                vkDestroySwapchainKHR(logicalDevice, swapChain, nullptr);
-            }
-            vkDestroyDevice(logicalDevice, nullptr);
-        }
-
-        if (vkInstance != VK_NULL_HANDLE) {
-            if (surface != VK_NULL_HANDLE) {
-                vkDestroySurfaceKHR(vkInstance, surface, nullptr);
-            }
-
-            if (debugMessenger != VK_NULL_HANDLE) {
-                vkDestroyDebugUtilsMessengerEXT(vkInstance, debugMessenger, nullptr);
-            }
-            vkDestroyInstance(vkInstance, nullptr);
-        }
-    }
-
-    void Graphics::InitaliseVulkan() {
-        CreateInstance();
-        SetupDebugMessenger();
-        CreateSurface();
-        PickPhysicalDevice();
-        CreateLogicalDeviceAndQueues();
-        CreateSwapChain();
-    }
-
     Graphics::SwapChainProperties Graphics::GetSwapChainProperties(VkPhysicalDevice device) {
         SwapChainProperties properties;
 
@@ -398,7 +359,7 @@ namespace veng {
 
     bool IsRgbaTypeFormat(const VkSurfaceFormatKHR& formatProperties){
         return formatProperties.format == VK_FORMAT_R8G8B8A8_SRGB ||
-                formatProperties.format == VK_FORMAT_B8G8R8A8_SRGB;
+               formatProperties.format == VK_FORMAT_B8G8R8A8_SRGB;
     }
 
     bool IsSrgbColorSpace(const VkSurfaceFormatKHR& formatProperties) {
@@ -458,12 +419,22 @@ namespace veng {
         }
     }
 
+    std::uint32_t Graphics::ChooseSwapImageCount(const VkSurfaceCapabilitiesKHR& capabilities) {
+        std::uint32_t imageCount = capabilities.minImageCount + 1;
+
+        if (capabilities.maxImageCount > 0 && capabilities.maxImageCount < imageCount){
+            imageCount = capabilities.maxImageCount;
+        }
+
+        return imageCount;
+    }
+
     void Graphics::CreateSwapChain() {
         SwapChainProperties properties = GetSwapChainProperties(physicalDevice);
 
-        VkSurfaceFormatKHR surfaceFormat = ChooseSwapSurfaceFormat(properties.formats);
-        VkPresentModeKHR presentMode = ChooseSwapPresentMode(properties.presentModes);
-        VkExtent2D extent = ChooseSwapExtent(properties.capabilities);
+        surfaceFormat = ChooseSwapSurfaceFormat(properties.formats);
+        presentMode = ChooseSwapPresentMode(properties.presentModes);
+        extent = ChooseSwapExtent(properties.capabilities);
 
         std::uint32_t imageCount = ChooseSwapImageCount(properties.capabilities);
 
@@ -502,16 +473,50 @@ namespace veng {
         if (result != VK_SUCCESS){
             std::exit(EXIT_FAILURE);
         }
+
+        std::uint32_t actualImageCount;
+        vkGetSwapchainImagesKHR(logicalDevice, swapChain, &actualImageCount, nullptr);
+        swapChainImages.resize(actualImageCount);
+        vkGetSwapchainImagesKHR(logicalDevice, swapChain, &actualImageCount, swapChainImages.data());
     }
 
-    std::uint32_t Graphics::ChooseSwapImageCount(const VkSurfaceCapabilitiesKHR& capabilities) {
-        std::uint32_t imageCount = capabilities.minImageCount + 1;
+#pragma endregion
 
-        if (capabilities.maxImageCount > 0 && capabilities.maxImageCount < imageCount){
-            imageCount = capabilities.maxImageCount;
+    Graphics::Graphics(gsl::not_null<Window *> window) : window (window){
+    #if !defined(NDEBUG)
+        validationEnabled = true;
+    #endif
+
+        InitaliseVulkan();
+    }
+
+    Graphics::~Graphics() {
+        if (logicalDevice != VK_NULL_HANDLE) {
+            if (swapChain != VK_NULL_HANDLE) {
+                vkDestroySwapchainKHR(logicalDevice, swapChain, nullptr);
+            }
+            vkDestroyDevice(logicalDevice, nullptr);
         }
 
-        return imageCount;
+        if (vkInstance != VK_NULL_HANDLE) {
+            if (surface != VK_NULL_HANDLE) {
+                vkDestroySurfaceKHR(vkInstance, surface, nullptr);
+            }
+
+            if (debugMessenger != VK_NULL_HANDLE) {
+                vkDestroyDebugUtilsMessengerEXT(vkInstance, debugMessenger, nullptr);
+            }
+            vkDestroyInstance(vkInstance, nullptr);
+        }
+    }
+
+    void Graphics::InitaliseVulkan() {
+        CreateInstance();
+        SetupDebugMessenger();
+        CreateSurface();
+        PickPhysicalDevice();
+        CreateLogicalDeviceAndQueues();
+        CreateSwapChain();
     }
 
 }
