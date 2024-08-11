@@ -47,6 +47,7 @@ namespace veng {
 
         void CreateSurface();
         void CreateSwapChain();
+        void CreateImageViews();
         bool AreAllDeviceExtensionsSupported(VkPhysicalDevice device);
 
         VkSurfaceFormatKHR ChooseSwapSurfaceFormat(gsl::span<VkSurfaceFormatKHR> formats);
@@ -73,6 +74,7 @@ namespace veng {
         VkPresentModeKHR presentMode;
         VkExtent2D extent;
         std::vector<VkImage> swapChainImages;
+        std::vector<VkImageView> swapChainImageViews;
 
         gsl::span<gsl::czstring> m_suggestedExtensions;
         std::vector<gsl::czstring> m_extensions;

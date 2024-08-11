@@ -480,6 +480,34 @@ namespace veng {
         vkGetSwapchainImagesKHR(logicalDevice, swapChain, &actualImageCount, swapChainImages.data());
     }
 
+    void Graphics::CreateImageViews() {
+        swapChainImageViews.resize(swapChainImages.size());
+
+        auto imageViewIt = swapChainImageViews.begin();
+        for (VkImage image : swapChainImages) {
+            VkImageViewCreateInfo info = {};
+            info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+            info.image = image;
+            info.viewType = VK_IMAGE_VIEW_TYPE_2D;
+            info.format = surfaceFormat.format;
+            info.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+            info.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+            info.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+            info.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+            info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            info.subresourceRange.baseMipLevel = 0;
+            info.subresourceRange.levelCount = 1;
+            info.subresourceRange.baseArrayLayer = 0;
+            info.subresourceRange.layerCount = 1;
+
+            VkResult result = vkCreateImageView(logicalDevice, &info, nullptr, &*imageViewIt);
+            if (result != VK_SUCCESS){
+                std::exit(EXIT_FAILURE);
+            }
+            std::next(imageViewIt);
+        }
+    }
+
 #pragma endregion
 
     Graphics::Graphics(gsl::not_null<Window *> window) : window (window){
@@ -492,6 +520,11 @@ namespace veng {
 
     Graphics::~Graphics() {
         if (logicalDevice != VK_NULL_HANDLE) {
+
+            for (VkImageView imageView : swapChainImageViews) {
+                vkDestroyImageView(logicalDevice, imageView, nullptr);
+            }
+
             if (swapChain != VK_NULL_HANDLE) {
                 vkDestroySwapchainKHR(logicalDevice, swapChain, nullptr);
             }
@@ -518,5 +551,4 @@ namespace veng {
         CreateLogicalDeviceAndQueues();
         CreateSwapChain();
     }
-
 }
