@@ -9,9 +9,10 @@ namespace veng {
         Window(gsl::czstring name, glm::ivec2 size);
         ~Window();
 
-        [[nodiscard]] glm::ivec2 GetWindowSize() const;
-        [[nodiscard]] bool ShouldClose() const;
-        [[nodiscard]] GLFWwindow* GetHandle() const;
+        glm::ivec2 GetWindowSize() const;
+        glm::ivec2 GetFrameBufferSize() const;
+        bool ShouldClose() const;
+        GLFWwindow* GetHandle() const;
 
         bool TryMoveToMonitor(std::uint16_t monitorNumber);
 

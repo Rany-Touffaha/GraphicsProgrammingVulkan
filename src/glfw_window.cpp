@@ -41,4 +41,10 @@ namespace veng{
 
         return false;
     }
+
+    glm::ivec2 Window::GetFrameBufferSize() const {
+        glm::ivec2 frameBufferSize;
+        glfwGetFramebufferSize(window, &frameBufferSize.x, &frameBufferSize.y);
+        return frameBufferSize;
+    }
 }

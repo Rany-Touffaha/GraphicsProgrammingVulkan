@@ -46,7 +46,12 @@ namespace veng {
         std::vector<VkPhysicalDevice> GetAvailableDevices();
 
         void CreateSurface();
+        void CreateSwapChain();
         bool AreAllDeviceExtensionsSupported(VkPhysicalDevice device);
+
+        VkSurfaceFormatKHR ChooseSwapSurfaceFormat(gsl::span<VkSurfaceFormatKHR> formats);
+        VkPresentModeKHR ChooseSwapPresentMode(gsl::span<VkPresentModeKHR> presentModes);
+        VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
 
         std::array<gsl::czstring, 1> requiredDeviceExtensions = {
             VK_KHR_SWAPCHAIN_EXTENSION_NAME
