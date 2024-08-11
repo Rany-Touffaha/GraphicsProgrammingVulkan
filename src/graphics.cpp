@@ -294,6 +294,17 @@ namespace veng {
 
 #pragma endregion
 
+#pragma region PRESENTATION
+
+    void Graphics::CreateSurface() {
+        VkResult result = glfwCreateWindowSurface(vkInstance, window->GetHandle(), nullptr, &surface);
+        if (result != VK_SUCCESS) {
+            std::exit(EXIT_FAILURE);
+        }
+    }
+
+#pragma endregion
+
     Graphics::Graphics(gsl::not_null<Window *> window) : window (window){
     #if !defined(NDEBUG)
         validationEnabled = true;
@@ -303,12 +314,16 @@ namespace veng {
     }
 
     Graphics::~Graphics() {
-        if (logicalDevice != nullptr) {
+        if (logicalDevice != VK_NULL_HANDLE) {
             vkDestroyDevice(logicalDevice, nullptr);
         }
 
-        if (vkInstance != nullptr) {
-            if (debugMessenger != nullptr) {
+        if (vkInstance != VK_NULL_HANDLE) {
+            if (surface != VK_NULL_HANDLE) {
+                vkDestroySurfaceKHR(vkInstance, surface, nullptr);
+            }
+
+            if (debugMessenger != VK_NULL_HANDLE) {
                 vkDestroyDebugUtilsMessengerEXT(vkInstance, debugMessenger, nullptr);
             }
             vkDestroyInstance(vkInstance, nullptr);
@@ -320,5 +335,7 @@ namespace veng {
         SetupDebugMessenger();
         PickPhysicalDevice();
         CreateLogicalDeviceAndQueues();
+        CreateSurface();
     }
+
 }

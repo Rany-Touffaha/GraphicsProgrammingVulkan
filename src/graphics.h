@@ -36,12 +36,17 @@ namespace veng {
         bool IsDeviceSuitable(VkPhysicalDevice device);
         std::vector<VkPhysicalDevice> GetAvailableDevices();
 
+        void CreateSurface();
+
         VkInstance vkInstance = VK_NULL_HANDLE;
         VkDebugUtilsMessengerEXT debugMessenger{};
 
         VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
         VkDevice logicalDevice = VK_NULL_HANDLE;
         VkQueue graphicsQueue = VK_NULL_HANDLE;
+
+        VkSurfaceKHR surface  = VK_NULL_HANDLE;
+
         gsl::span<gsl::czstring> m_suggestedExtensions;
         std::vector<gsl::czstring> m_extensions;
         gsl::not_null<Window*> window;
