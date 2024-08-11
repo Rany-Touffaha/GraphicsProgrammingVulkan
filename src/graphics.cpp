@@ -256,7 +256,7 @@ namespace veng {
     bool Graphics::IsDeviceSuitable(VkPhysicalDevice device) {
 
         QueueFamilyIndices families = FindQueueFamilies(device);
-        return families.IsValid() && AreAllDeviceExtensionsSupported(device);
+        return families.IsValid() && AreAllDeviceExtensionsSupported(device) && GetSwapChainProperties(device).IsValid();
     }
 
     void Graphics::PickPhysicalDevice() {
@@ -373,6 +373,24 @@ namespace veng {
         CreateSurface();
         PickPhysicalDevice();
         CreateLogicalDeviceAndQueues();
+    }
+
+    Graphics::SwapChainProperties Graphics::GetSwapChainProperties(VkPhysicalDevice device) {
+        SwapChainProperties properties;
+
+        vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, &properties.capabilities);
+
+        std::uint32_t formatCount;
+        vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, nullptr);
+        properties.formats.resize(formatCount);
+        vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, properties.formats.data());
+
+        std::uint32_t modesCount;
+        vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &modesCount, nullptr);
+        properties.presentModes.resize(modesCount);
+        vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &modesCount, properties.presentModes.data());
+
+        return properties;
     }
 
 }

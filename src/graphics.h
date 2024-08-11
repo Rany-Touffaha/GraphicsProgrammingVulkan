@@ -18,6 +18,14 @@ namespace veng {
             bool IsValid() const { return graphicsFamily.has_value() && presentationFamily.has_value();}
         };
 
+        struct SwapChainProperties {
+            VkSurfaceCapabilitiesKHR capabilities;
+            std::vector<VkSurfaceFormatKHR> formats;
+            std::vector<VkPresentModeKHR> presentModes;
+
+            bool IsValid() const { return !formats.empty() && !presentModes.empty();}
+        };
+
         void InitaliseVulkan();
         void CreateInstance();
         void SetupDebugMessenger();
@@ -33,6 +41,7 @@ namespace veng {
         static bool AreAllLayersSupported(gsl::span<gsl::czstring> layers);
 
         QueueFamilyIndices FindQueueFamilies(VkPhysicalDevice device);
+        SwapChainProperties GetSwapChainProperties(VkPhysicalDevice device);
         bool IsDeviceSuitable(VkPhysicalDevice device);
         std::vector<VkPhysicalDevice> GetAvailableDevices();
 
