@@ -37,6 +37,11 @@ namespace veng {
         std::vector<VkPhysicalDevice> GetAvailableDevices();
 
         void CreateSurface();
+        bool AreAllDeviceExtensionsSupported(VkPhysicalDevice device);
+
+        std::array<gsl::czstring, 1> requiredDeviceExtensions = {
+            VK_KHR_SWAPCHAIN_EXTENSION_NAME
+        };
 
         VkInstance vkInstance = VK_NULL_HANDLE;
         VkDebugUtilsMessengerEXT debugMessenger{};
@@ -53,5 +58,6 @@ namespace veng {
         gsl::not_null<Window*> window;
         bool validationEnabled = false;
 
+        std::vector<VkExtensionProperties> GetDeviceAvailableExtensions(VkPhysicalDevice device);
     };
 }

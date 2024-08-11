@@ -236,10 +236,27 @@ namespace veng {
         return result;
     }
 
+    std::vector<VkExtensionProperties> Graphics::GetDeviceAvailableExtensions(VkPhysicalDevice device){
+        std::uint32_t availableExtensionsCount;
+        vkEnumerateDeviceExtensionProperties(device, nullptr, &availableExtensionsCount, nullptr);
+
+        std::vector<VkExtensionProperties> availableExtensions(availableExtensionsCount);
+        vkEnumerateDeviceExtensionProperties(device, nullptr, &availableExtensionsCount, availableExtensions.data());
+
+        return availableExtensions;
+    }
+
+    bool Graphics::AreAllDeviceExtensionsSupported(VkPhysicalDevice device) {
+        std::vector<VkExtensionProperties> availableExtensions = GetDeviceAvailableExtensions(device);
+
+        return std::all_of(requiredDeviceExtensions.begin(), requiredDeviceExtensions.end(),
+                           std::bind_front(IsExtensionSupported, availableExtensions));
+    }
+
     bool Graphics::IsDeviceSuitable(VkPhysicalDevice device) {
 
         QueueFamilyIndices families = FindQueueFamilies(device);
-        return families.IsValid();
+        return families.IsValid() && AreAllDeviceExtensionsSupported(device);
     }
 
     void Graphics::PickPhysicalDevice() {
@@ -292,8 +309,6 @@ namespace veng {
             queueCreateInfos.push_back(queueInfo);
         }
 
-
-
         VkPhysicalDeviceFeatures requiredFeatures = {};
 
         VkDeviceCreateInfo deviceInfo = {};
@@ -301,7 +316,8 @@ namespace veng {
         deviceInfo.queueCreateInfoCount = queueCreateInfos.size();
         deviceInfo.pQueueCreateInfos = queueCreateInfos.data();
         deviceInfo.pEnabledFeatures = &requiredFeatures;
-        deviceInfo.enabledExtensionCount = 0;
+        deviceInfo.enabledExtensionCount = requiredDeviceExtensions.size();
+        deviceInfo.ppEnabledExtensionNames = requiredDeviceExtensions.data();
         deviceInfo.enabledLayerCount = 0;
 
         VkResult result = vkCreateDevice(physicalDevice, &deviceInfo, nullptr, &logicalDevice);
