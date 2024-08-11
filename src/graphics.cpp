@@ -351,6 +351,9 @@ namespace veng {
 
     Graphics::~Graphics() {
         if (logicalDevice != VK_NULL_HANDLE) {
+            if (swapChain != VK_NULL_HANDLE) {
+                vkDestroySwapchainKHR(logicalDevice, swapChain, nullptr);
+            }
             vkDestroyDevice(logicalDevice, nullptr);
         }
 
@@ -462,6 +465,53 @@ namespace veng {
         VkPresentModeKHR presentMode = ChooseSwapPresentMode(properties.presentModes);
         VkExtent2D extent = ChooseSwapExtent(properties.capabilities);
 
+        std::uint32_t imageCount = ChooseSwapImageCount(properties.capabilities);
+
+        VkSwapchainCreateInfoKHR info = {};
+        info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+        info.surface = surface;
+        info.minImageCount = imageCount;
+        info.imageFormat = surfaceFormat.format;
+        info.imageColorSpace = surfaceFormat.colorSpace;
+        info.imageExtent = extent;
+        info.imageArrayLayers = 1;
+        info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+        info.presentMode = presentMode;
+        info.preTransform = properties.capabilities.currentTransform;
+        info.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+        info.clipped = VK_TRUE;
+        info.oldSwapchain = VK_NULL_HANDLE;
+
+        QueueFamilyIndices indices = FindQueueFamilies(physicalDevice);
+
+
+        if (indices.graphicsFamily != indices.presentationFamily){
+            std::array<std::uint32_t, 2> familyIndices = {
+                    indices.graphicsFamily.value(),
+                    indices.presentationFamily.value(),
+            };
+
+            info.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
+            info.queueFamilyIndexCount = familyIndices.size();
+            info.pQueueFamilyIndices = familyIndices.data();
+        } else {
+            info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        }
+
+        VkResult result = vkCreateSwapchainKHR(logicalDevice, &info, nullptr, &swapChain);
+        if (result != VK_SUCCESS){
+            std::exit(EXIT_FAILURE);
+        }
+    }
+
+    std::uint32_t Graphics::ChooseSwapImageCount(const VkSurfaceCapabilitiesKHR& capabilities) {
+        std::uint32_t imageCount = capabilities.minImageCount + 1;
+
+        if (capabilities.maxImageCount > 0 && capabilities.maxImageCount < imageCount){
+            imageCount = capabilities.maxImageCount;
+        }
+
+        return imageCount;
     }
 
 }

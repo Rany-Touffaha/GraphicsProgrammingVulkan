@@ -52,6 +52,8 @@ namespace veng {
         VkSurfaceFormatKHR ChooseSwapSurfaceFormat(gsl::span<VkSurfaceFormatKHR> formats);
         VkPresentModeKHR ChooseSwapPresentMode(gsl::span<VkPresentModeKHR> presentModes);
         VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
+        std::uint32_t ChooseSwapImageCount(const VkSurfaceCapabilitiesKHR& capabilities);
+
 
         std::array<gsl::czstring, 1> requiredDeviceExtensions = {
             VK_KHR_SWAPCHAIN_EXTENSION_NAME
@@ -66,6 +68,7 @@ namespace veng {
         VkQueue presentQueue = VK_NULL_HANDLE;
 
         VkSurfaceKHR surface  = VK_NULL_HANDLE;
+        VkSwapchainKHR swapChain = VK_NULL_HANDLE;
 
         gsl::span<gsl::czstring> m_suggestedExtensions;
         std::vector<gsl::czstring> m_extensions;
@@ -73,5 +76,6 @@ namespace veng {
         bool validationEnabled = false;
 
         std::vector<VkExtensionProperties> GetDeviceAvailableExtensions(VkPhysicalDevice device);
+
     };
 }
